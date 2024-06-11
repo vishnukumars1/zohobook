@@ -60185,8 +60185,13 @@ def salespurchasebyparty(request):
     else:
         return redirect('/')
     log_details= LoginDetails.objects.get(id=login_id)
+    if log_details.user_type == 'Staff':
+        dash_details = StaffDetails.objects.get(login_details=log_details)
+        cmp = dash_details.company
     if log_details.user_type == 'Company':
         dash_details = CompanyDetails.objects.get(login_details=log_details)
+        cmp = dash_details
+
 
     if request.method == 'POST':
         start_date_str = request.POST.get('from_date')
@@ -60197,15 +60202,176 @@ def salespurchasebyparty(request):
             start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
-            data = invoice.objects.filter(company=dash_details.id, date__range=(start_date, end_date))   
-            allmodules= ZohoModules.objects.get(company=dash_details,status='New')
-            billses = Bill.objects.filter(Company=dash_details.id)
-            context = {
-                'cmp':dash_details,
-                'allmodules':allmodules,
-                'bill':billses,
-                'data':data,
+            allmodules= ZohoModules.objects.get(company=cmp,status='New')
+            data = invoice.objects.filter(company=dash_details.id, date__range=(start_date, end_date))
+            cus = Customer.objects.filter(company=dash_details.id)
+            dic = {}
 
+            for i in cus:
+                vie = 0
+                for s in data:
+                    if i.id == s.customer.id:
+                        vie += s.sub_total
+                dic[i] = [vie]
+            total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+            billses = Bill.objects.filter(Company=dash_details.id, Bill_Date__range=(start_date, end_date))
+            for i in cus:
+                vie = 0
+                for s in billses:
+                    if i.id == s.Customer.id:
+                        vie += s.Sub_Total
+                        print(s.Sub_Total)
+                dic[i].append(float(vie))
+            bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
+            cont = {
+                'cmp':cmp,
+                'bill_total':bill_total,
+                'total_price':total_price,
+                'start_date':start_date,
+                'end_date':end_date,
+                'dic':dic,
             }
-            return render(request,'zohomodules/Reports/sales_purchase_byparty.html',context)
-    return render(request,'zohomodules/Reports/sales_purchase_byparty.html')
+            return render(request,'zohomodules/Reports/sales_purchase_byparty.html',cont)  
+    data = invoice.objects.filter(company=dash_details.id)
+    cus = Customer.objects.filter(company=dash_details.id)
+    dic = {}
+
+    for i in cus:
+        vie = 0
+        for s in data:
+            if i.id == s.customer.id:
+                vie += s.sub_total
+        dic[i] = [vie]
+    total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+    allmodules= ZohoModules.objects.get(company=cmp,status='New')
+    billses = Bill.objects.filter(Company=dash_details.id)
+    for i in cus:
+        vie = 0
+        for s in billses:
+            if i.id == s.Customer.id:
+                vie += s.Sub_Total
+                print(s.Sub_Total)
+        dic[i].append(float(vie))
+    print(dic)
+    bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
+    context = {
+        'cmp':cmp,
+        'allmodules':allmodules,
+        'bill_total':bill_total,
+        'total_price':total_price,
+        'dic':dic,
+
+        }
+    return render(request,'zohomodules/Reports/sales_purchase_byparty.html',context)
+
+
+def share_mail(request):
+    if 'login_id' in request.session:
+        log_id = request.session['login_id']
+        log_details= LoginDetails.objects.get(id=log_id)
+        if log_details.user_type == 'Staff':
+            dash_details = StaffDetails.objects.get(login_details=log_details)
+            cmp = dash_details.company
+        if log_details.user_type == 'Company':
+            dash_details = CompanyDetails.objects.get(login_details=log_details)
+            cmp = dash_details
+
+        
+        if request.method == 'POST':
+            emails_string = request.POST['email_ids']
+
+                
+            emails_list = [email.strip() for email in emails_string.split(',')]
+            email_message = request.POST['email_message']
+            start_date_str = request.POST.get('from_date')
+            end_date_str = request.POST.get('to_date')
+
+            if start_date_str and end_date_str:
+                    # Convert date strings to datetime objects
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+
+                data = invoice.objects.filter(company=dash_details.id, date__range=(start_date, end_date))
+                cus = Customer.objects.filter(company=dash_details.id)
+                dic = {}
+
+                for i in cus:
+                    vie = 0
+                    for s in data:
+                        if i.id == s.customer.id:
+                            vie += s.sub_total
+                    dic[i] = [vie]
+                total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+                billses = Bill.objects.filter(Company=dash_details.id, Bill_Date__range=(start_date, end_date))
+                for i in cus:
+                    vie = 0
+                    for s in billses:
+                        if i.id == s.Customer.id:
+                            vie += s.Sub_Total
+                            print(s.Sub_Total)
+                    dic[i].append(float(vie))
+                bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
+                cont = {
+                    'cmp':cmp,
+                    'bill_total':bill_total,
+                    'total_price':total_price,
+                    'start_date':start_date,
+                    'end_date':end_date,
+                    'dic':dic,
+                }
+
+                
+            data = invoice.objects.filter(company=dash_details.id)
+            cus = Customer.objects.filter(company=dash_details.id)
+            dic = {}
+
+            for i in cus:
+                vie = 0
+                for s in data:
+                    if i.id == s.customer.id:
+                        vie += s.sub_total
+                dic[i] = [vie]
+                        
+            total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+            allmodules= ZohoModules.objects.get(company=cmp,status='New')
+            billses = Bill.objects.filter(Company=dash_details.id)
+            for i in cus:
+                vie = 0
+                for s in billses:
+                    if i.id == s.Customer.id:
+                        vie += s.Sub_Total
+                        print(s.Sub_Total)
+                dic[i].append(float(vie))
+            print(dic)
+            bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
+            context = {
+                'cmp':cmp,
+                'allmodules':allmodules,
+                'bill_total':bill_total,
+                'total_price':total_price,
+                'dic':dic,
+
+                }
+    
+            template_path = 'zohomodules/Reports/sales_purchase_by_party_pdf.html'
+            template = get_template(template_path)
+
+            html  = template.render(context)
+            print('for loop executed')
+            for i in emails_list:
+                print(i)
+            result = BytesIO()
+
+            pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+            pdf = result.getvalue()
+                
+            filename = f'Sales Purchase By Party Report'
+            subject = f"Sales Purchase By Party Report"
+            # from django.core.mail import EmailMessage as EmailMsg
+            email = EmailMsg(subject, f"Hi,\nPlease find the attached All Parties Report. \n{email_message}\n\n--\nRegards,\n{cmp.company_name}\n{cmp.address}\n{cmp.state} - {cmp.country}\n{cmp.contact}", from_email=settings.EMAIL_HOST_USER, to=emails_list)
+            email.attach(filename, pdf, "application/pdf")
+            email.send(fail_silently=False)
+
+            messages.success(request, 'Sales Purchase By Party Report details has been shared via email successfully..!')
+            return redirect('sales_purchase_byparty')
+        return redirect('sales_purchase_byparty')
