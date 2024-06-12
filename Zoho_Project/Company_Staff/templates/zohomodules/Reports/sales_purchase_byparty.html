@@ -294,26 +294,33 @@ input[type="date"]::-webkit-calendar-picker-indicator {
                                                                 </thead>
                                                                 {% for key,i in dic.items %}
                                                                 <tbody>
-                                                                   
+                                                                   {% if i != 0 %}
                                                                     <tr>
-                                                                        {% if i.0 != 0 %}
+                                                                      
                                                                         <td class="text-center">{{key.first_name}} {{key.last_name}}</td>
-                                                                        <td class="text-center">{{i.0}}</td>
+                                                                        <td class="text-center">{{i}}</td>
                                                                         <td class="text-center">0</td>
-                                                                        {% endif %}
-                                                                    </tr>
-
-                                                                    <tr>
-                                                                        {% if i.1 != 0 %}
-                                                                        <td class="text-center">{{key.first_name}} {{key.last_name}}</td>
-                                                                        <td class="text-center">0</td>
-                                                                        <td class="text-center">{{i.1}}</td>
-                                                                        {% endif %}
                                                                         
                                                                     </tr>
+                                                                    {% endif %}
+                                                                    {% endfor %}
+
+                                                                    {% for key,i in dic2.items %}
+                                                                    {% if i != 0 %}
+
+                                                                    <tr>
+                                                                       
+                                                                        <td class="text-center">{{key.first_name}} {{key.last_name}}</td>
+                                                                        <td class="text-center">0</td>
+                                                                        <td class="text-center">{{i}}</td>
+                                                                       
+                                                                        
+                                                                    </tr>
+                                                                    {% endif %}
+                                                                    {% endfor %}
                                                                     
                                                                 </tbody>
-                                                                {% endfor %}
+                                                                
                                                               
                                                             </table>
                                                         </section>

@@ -60206,22 +60206,24 @@ def salespurchasebyparty(request):
             data = invoice.objects.filter(company=dash_details.id, date__range=(start_date, end_date))
             cus = Customer.objects.filter(company=dash_details.id)
             dic = {}
+            dic2 = {}
 
             for i in cus:
                 vie = 0
                 for s in data:
                     if i.id == s.customer.id:
                         vie += s.sub_total
-                dic[i] = [vie]
+                dic[i] = vie
             total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+            ven = Vendor.objects.filter(company=dash_details.id)
             billses = Bill.objects.filter(Company=dash_details.id, Bill_Date__range=(start_date, end_date))
-            for i in cus:
+            for i in ven:
                 vie = 0
                 for s in billses:
-                    if i.id == s.Customer.id:
+                    if i.id == s.Vendor.id:
                         vie += s.Sub_Total
                         print(s.Sub_Total)
-                dic[i].append(float(vie))
+                dic2[i] = vie
             bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
             cont = {
                 'cmp':cmp,
@@ -60230,29 +60232,33 @@ def salespurchasebyparty(request):
                 'start_date':start_date,
                 'end_date':end_date,
                 'dic':dic,
+                'dic2':dic2,
             }
             return render(request,'zohomodules/Reports/sales_purchase_byparty.html',cont)  
     data = invoice.objects.filter(company=dash_details.id)
     cus = Customer.objects.filter(company=dash_details.id)
     dic = {}
+    dic2 = {}
 
     for i in cus:
         vie = 0
         for s in data:
             if i.id == s.customer.id:
-                vie += s.sub_total
-        dic[i] = [vie]
+                vie += float(s.sub_total)
+        dic[i] = vie
+    print(dic)
     total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
     allmodules= ZohoModules.objects.get(company=cmp,status='New')
+    ven = Vendor.objects.filter(company=dash_details.id)
     billses = Bill.objects.filter(Company=dash_details.id)
-    for i in cus:
+    for i in ven:
         vie = 0
         for s in billses:
-            if i.id == s.Customer.id:
-                vie += s.Sub_Total
+            if i.id == s.Vendor.id:
+                vie += float(s.Sub_Total)
                 print(s.Sub_Total)
-        dic[i].append(float(vie))
-    print(dic)
+        dic2[i] = vie
+    
     bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
     context = {
         'cmp':cmp,
@@ -60260,6 +60266,7 @@ def salespurchasebyparty(request):
         'bill_total':bill_total,
         'total_price':total_price,
         'dic':dic,
+        'dic2':dic2,
 
         }
     return render(request,'zohomodules/Reports/sales_purchase_byparty.html',context)
@@ -60294,22 +60301,24 @@ def share_mail(request):
                 data = invoice.objects.filter(company=dash_details.id, date__range=(start_date, end_date))
                 cus = Customer.objects.filter(company=dash_details.id)
                 dic = {}
+                dic2 = {}
 
                 for i in cus:
                     vie = 0
                     for s in data:
                         if i.id == s.customer.id:
                             vie += s.sub_total
-                    dic[i] = [vie]
+                    dic[i] = vie
                 total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
+                ven = Vendor.objects.filter(company=dash_details.id)
                 billses = Bill.objects.filter(Company=dash_details.id, Bill_Date__range=(start_date, end_date))
-                for i in cus:
+                for i in ven:
                     vie = 0
                     for s in billses:
-                        if i.id == s.Customer.id:
+                        if i.id == s.Vendor.id:
                             vie += s.Sub_Total
                             print(s.Sub_Total)
-                    dic[i].append(float(vie))
+                    dic2[i].append(float(vie))
                 bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
                 cont = {
                     'cmp':cmp,
@@ -60318,30 +60327,33 @@ def share_mail(request):
                     'start_date':start_date,
                     'end_date':end_date,
                     'dic':dic,
+                    'dic2':dic2,
                 }
 
                 
             data = invoice.objects.filter(company=dash_details.id)
             cus = Customer.objects.filter(company=dash_details.id)
             dic = {}
+            dic2 = {}
 
             for i in cus:
                 vie = 0
                 for s in data:
                     if i.id == s.customer.id:
                         vie += s.sub_total
-                dic[i] = [vie]
+                dic[i] = vie
                         
             total_price = data.aggregate(total_price=Sum('sub_total'))['total_price'] or 0
             allmodules= ZohoModules.objects.get(company=cmp,status='New')
+            ven = Vendor.objects.filter(company=dash_details.id)
             billses = Bill.objects.filter(Company=dash_details.id)
-            for i in cus:
+            for i in ven:
                 vie = 0
                 for s in billses:
-                    if i.id == s.Customer.id:
+                    if i.id == s.Vendor.id:
                         vie += s.Sub_Total
                         print(s.Sub_Total)
-                dic[i].append(float(vie))
+                dic2[i] = vie
             print(dic)
             bill_total = billses.aggregate(bill_total=Sum('Sub_Total'))['bill_total'] or 0
             context = {
@@ -60350,6 +60362,7 @@ def share_mail(request):
                 'bill_total':bill_total,
                 'total_price':total_price,
                 'dic':dic,
+                'dic2':dic
 
                 }
     
